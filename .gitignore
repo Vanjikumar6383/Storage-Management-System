@@ -48,3 +48,6 @@ dist-ssr
 .env
 .env.local
 .env.production
+
+# Scratch & Local Utilities
+import random.py
