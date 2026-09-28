@@ -105,6 +105,26 @@ npm run dev
 
 ## 🧪 7. Verification & Demo Scripts
 
+### 🌟 Run 100% Master Project Verification (10 Checks)
+```bash
+python backend/scripts/run_complete_project_verification.py
+```
+
+### ⚡ Run 5 Operational Edge & Failure Scenarios
+```bash
+python backend/scripts/run_edge_cases_demo.py
+```
+
+### 🔄 Run Legacy Coexistence & Rollback Demonstration
+```bash
+python backend/scripts/run_legacy_coexistence_and_rollback_demo.py
+```
+
+### 📊 Generate Realistic Multi-Tenant Benchmark Dataset (Zero PII)
+```bash
+python backend/scripts/generate_realistic_dataset.py
+```
+
 ### Run Automated End-to-End Demo
 ```bash
 python backend/scripts/run_e2e_demo.py
@@ -115,20 +135,15 @@ python backend/scripts/run_e2e_demo.py
 python backend/scripts/run_smoke_test.py
 ```
 
-### Run Final Release Verification Suite (10 Checks)
-```bash
-python backend/scripts/final_verify.py
-```
-
 ### Run Full Test Suites
 ```bash
-# Backend Pytest Suite (121 tests)
+# Backend Pytest Suite (122 tests including edge cases)
 cd backend && pytest -v
 
 # Frontend Vitest Suite (7 tests)
 cd frontend && npm test
 
-# Frontend Production Build
+# Frontend Production Build (Vite + TypeScript)
 cd frontend && npm run build
 ```
 
@@ -169,6 +184,12 @@ docker compose up -d
 
 ## 📚 10. Complete Documentation Index
 
+- [`docs/requirements-specification.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/requirements-specification.md) — Formal Requirements Specification, Zero-PII Invariant & Precedence Hierarchy
+- [`docs/edge-and-failure-cases.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/edge-and-failure-cases.md) — 5 Operational Edge & Failure Scenarios with Proofs & Retrieval Safeguards
+- [`docs/legacy-coexistence-and-rollback.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/legacy-coexistence-and-rollback.md) — Legacy Workflow Coexistence (Shadow Mode) & Instant Rollback Demonstration
+- [`docs/cost-reduction-and-error-analysis.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/cost-reduction-and-error-analysis.md) — Baseline vs Target vs Measured Cost, Confusion Matrix & Error Analysis
+- [`docs/stakeholder-validation-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/stakeholder-validation-report.md) — Formal Stakeholder Validation Signoff Report (FinOps, DevOps, Compliance, CTO)
+- [`docs/limitations.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/limitations.md) — System Boundaries, Cloud Provider Constraints & Scale Roadmap
 - [`docs/college-project-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/college-project-report.md) — 31-Section BE/BTech Academic Project Report
 - [`docs/modules.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/modules.md) — System Modules & Component Breakdown
 - [`docs/database-design.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/database-design.md) — Database Schema, ER Diagram & Mappings
@@ -178,5 +199,4 @@ docker compose up -d
 - [`docs/operations.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/operations.md) — Operational Runbook & Maintenance
 - [`docs/deployment.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/deployment.md) — Production Deployment Guide
 - [`docs/tech-stack.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/tech-stack.md) — Technology Stack & Licensing
-- [`docs/limitations.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/limitations.md) — Scope & Design Boundaries
 - [`docs/step-15-final-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/step-15-final-report.md) — Final Release Report

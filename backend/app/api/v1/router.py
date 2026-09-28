@@ -14,6 +14,7 @@ from app.api.v1.endpoints import (
     benchmark,
     ml_api,
     local_storage_api,
+    validation,
 )
 
 api_router = APIRouter()
@@ -27,4 +28,5 @@ api_router.include_router(costs.router)
 api_router.include_router(benchmark.router)
 api_router.include_router(ml_api.router)
 api_router.include_router(local_storage_api.router)
+api_router.include_router(validation.router)
 

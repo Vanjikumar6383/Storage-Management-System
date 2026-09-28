@@ -15,6 +15,7 @@ import {
   Building2,
   HardDrive,
   FolderOpen,
+  Award,
 } from 'lucide-react';
 
 export type PageTab =
@@ -27,7 +28,8 @@ export type PageTab =
   | 'environments'
   | 'policies'
   | 'audit'
-  | 'experiment';
+  | 'experiment'
+  | 'validation';
 
 interface LayoutProps {
   activeTab: PageTab;
@@ -50,6 +52,7 @@ export const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, childre
     { id: 'policies', label: 'Policies & Legal Holds', icon: <ShieldCheck size={18} /> },
     { id: 'audit', label: 'Audit Log', icon: <FileSpreadsheet size={18} /> },
     { id: 'experiment', label: 'Synthetic Benchmark', icon: <Building2 size={18} /> },
+    { id: 'validation', label: 'Stakeholder Validation', icon: <Award size={18} /> },
   ];
 
   return (

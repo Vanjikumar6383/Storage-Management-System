@@ -5,6 +5,7 @@ import { OverviewPage, SavingsPage } from './pages/OverviewAndSavings';
 import { RecommendationsPage, ApprovalsPage } from './pages/RecommendationsAndApprovals';
 import { MigrationsPage, ObjectsPage, EnvironmentsPage, PoliciesPage, AuditLogPage } from './pages/RemainingPages';
 import { ExperimentPage } from './pages/ExperimentPage';
+import { StakeholderValidationPage } from './pages/StakeholderValidation';
 import { OrganizationLogin } from './pages/OrganizationLogin';
 import { OrganizationPortal } from './pages/OrganizationPortal';
 
@@ -32,6 +33,7 @@ const MainApp: React.FC = () => {
       {activeTab === 'policies' && <PoliciesPage />}
       {activeTab === 'audit' && <AuditLogPage />}
       {activeTab === 'experiment' && <ExperimentPage />}
+      {activeTab === 'validation' && <StakeholderValidationPage />}
     </Layout>
   );
 };
