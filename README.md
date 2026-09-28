@@ -182,8 +182,178 @@ docker compose up -d
 
 ---
 
-## 📚 10. Complete Documentation Index
+---
 
+## 🗄️ 10. Database Schema & Entity Relationship Specification
+
+The platform utilizes a strictly partitioned multi-tenant relational schema on PostgreSQL 16 managed through Alembic and SQLAlchemy 2:
+
+```
+┌──────────────────┐       ┌────────────────────────┐
+│  organizations   │───────│  storage_connections   │
+└────────┬─────────┘       └───────────┬────────────┘
+         │                             │
+         │                             ▼
+         │                 ┌────────────────────────┐
+         ├─────────────────│   storage_locations    │
+         │                 └───────────┬────────────┘
+         │                             │
+         │                             ▼
+         │                 ┌────────────────────────┐
+         ├─────────────────│    storage_objects     │
+         │                 └───────────┬────────────┘
+         │                             │
+         │          ┌──────────────────┼──────────────────┐
+         │          ▼                  ▼                  ▼
+         │   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+         ├───│  telemetry   │   │  retention   │   │ legal_holds  │
+         │   └──────────────┘   └──────────────┘   └──────────────┘
+         │                             │
+         │                             ▼
+         │                 ┌────────────────────────┐
+         ├─────────────────│    recommendations     │
+         │                 └───────────┬────────────┘
+         │                             │
+         │                             ▼
+         │                 ┌────────────────────────┐
+         ├─────────────────│   approval_requests    │
+         │                 └───────────┬────────────┘
+         │                             │
+         │                             ▼
+         │                 ┌────────────────────────┐
+         ├─────────────────│    migration_events    │
+         │                 └───────────┬────────────┘
+         │                             │
+         │                             ▼
+         │                 ┌────────────────────────┐
+         ├─────────────────│    rollback_events     │
+         │                 └────────────────────────┘
+         │
+         ├─────────────────┌────────────────────────┐
+         │                 │       audit_logs       │ (Immutable Ledger)
+         │                 └────────────────────────┘
+         │
+         └─────────────────┌────────────────────────┐
+                           │     savings_ledger     │ (FinOps Cost Tracking)
+                           └────────────────────────┘
+```
+
+### Core Relational Entities
+1. **`organizations`**: Multi-tenant isolation boundary (`id`, `name`, `slug`, `created_at`).
+2. **`storage_connections`**: Provider credentials and connection metadata (`provider_type`, `auth_type`, `is_active`).
+3. **`storage_locations`**: S3 buckets / regional endpoints mapped to environments (`bucket_name`, `region`, `environment_tier`).
+4. **`storage_objects`**: Ingested object inventory (`object_key`, `size_bytes`, `storage_class`, `last_modified`, `etag`).
+5. **`legal_holds`**: Immutable regulatory hold blockers (`hold_identifier`, `reason`, `status`, `created_at`).
+6. **`retention_policies`**: Hierarchical retention rules (`min_retention_days`, `target_tier`, `precedence_rank`).
+7. **`recommendations`**: Explainable 5-state lifecycle actions (`type`, `projected_monthly_savings`, `roi_ratio`, `evidence_json`).
+8. **`approval_requests`**: Human confirmation gate records (`status`, `operator_id`, `override_reason`, `decided_at`).
+9. **`migration_events`**: Provider-side copy execution logs (`source_tier`, `target_tier`, `execution_latency_ms`).
+10. **`rollback_events`**: Reverse migration records ensuring instant reversion (`original_tier`, `restoration_status`).
+11. **`audit_logs`**: Append-only compliance log (`actor`, `action`, `target_urn`, `sanitized_payload`, `timestamp`).
+12. **`savings_ledger`**: Cumulative financial savings tracking (`organization_id`, `realized_monthly_savings_usd`, `period`).
+
+---
+
+## 🌐 11. Complete REST API Endpoint Catalog
+
+All endpoints are versioned under `/api/v1` with OpenAPI 3.0 interactive documentation at `http://localhost:8000/docs`:
+
+| Module | HTTP Method | Endpoint Path | Function & Security Boundary |
+| :--- | :---: | :--- | :--- |
+| **Storage Connections** | `GET` | `/api/v1/storage-connections` | List all active storage provider connectors |
+| | `POST` | `/api/v1/storage-connections` | Register provider credentials (credentials auto-masked) |
+| | `GET` | `/api/v1/storage-connections/{id}/health` | Probe provider health and API responsiveness |
+| **Telemetry Ingestion** | `POST` | `/api/v1/telemetry/sync` | Trigger non-destructive metadata sync sweep |
+| | `GET` | `/api/v1/telemetry/objects` | Query object inventory with multi-criteria filters |
+| | `GET` | `/api/v1/telemetry/summary` | Aggregate storage distribution across tiers |
+| **Policy Engine** | `GET` | `/api/v1/policies` | Retrieve organization, environment & location policies |
+| | `POST` | `/api/v1/policies` | Create hierarchical lifecycle rule with precedence rank |
+| | `POST` | `/api/v1/policies/legal-holds` | Apply absolute legal hold blocker on object/prefix |
+| | `DELETE` | `/api/v1/policies/legal-holds/{id}` | Release legal hold with mandatory compliance audit note |
+| **Recommendations** | `POST` | `/api/v1/recommendations/evaluate` | Execute 5-state decision engine with explainable evidence |
+| | `GET` | `/api/v1/recommendations` | List pending recommendations with projected ROI |
+| **Approvals & Rollback** | `POST` | `/api/v1/approvals/{id}/decide` | Approve/Reject with mandatory operator override reason |
+| | `POST` | `/api/v1/approvals/batch-execute` | Execute zero-download copy migration for approved items |
+| | `POST` | `/api/v1/approvals/{id}/rollback` | Trigger instant single-click reverse tier migration (< 60s) |
+| **Coexistence & CI/CD** | `POST` | `/api/v1/environments/{id}/teardown` | Idempotent ephemeral environment decommission webhook |
+| **Stakeholder Validation**| `GET` | `/api/v1/validation/matrix` | Cross-persona compliance & verification matrix |
+| | `GET` | `/api/v1/validation/metrics` | Real-time accuracy, savings, and safety invariant scores |
+| **Cost & FinOps** | `GET` | `/api/v1/costs/savings-summary` | Realized vs. projected monthly financial savings |
+| | `GET` | `/api/v1/costs/tier-distribution` | Financial distribution by cloud storage tier |
+
+---
+
+## 🔬 12. Granular Technical Documentation: Unit Testing & Error Boundaries
+
+### 12.1 Unit & Integration Testing Architecture
+The test suite consists of **124+ automated backend tests** spanning 22 specialized test modules:
+
+```
+backend/tests/
+├── test_approval_execution.py          # Operator workflows, approvals, and rollback execution
+├── test_aws_s3_connector.py             # Live AWS boto3 connector, CopyObject, and backoff
+├── test_aws_s3_production_validation.py # Live cloud validation and error code handling
+├── test_connector_capabilities.py      # Provider feature matrix & tier compatibility
+├── test_connector_factory.py           # Factory instantiation & fallback routing
+├── test_connectors.py                  # Storage connector interfaces & method signatures
+├── test_cost_engine.py                 # Multi-tier cost calculation and savings projection
+├── test_credentials.py                 # Credential resolution & secret masking
+├── test_dashboard_api.py               # Control plane telemetry aggregation
+├── test_database.py                    # Multi-tenant isolation & transaction rollback
+├── test_edge_and_failure_cases.py      # Transient network, rate limits & conflict resolution
+├── test_health.py                      # Liveness, readiness, and connectivity probes
+├── test_industry_experiment.py         # 10,000-object benchmark experiment verification
+├── test_ingestion.py                   # Non-destructive metadata list operations
+├── test_organization_registration.py   # Multi-tenancy creation & role assignment
+├── test_policy_engine.py               # Deterministic 4-level precedence evaluation
+├── test_production_readiness.py        # End-to-end smoke tests and health checks
+├── test_recommendation_engine.py       # 5-state classifier, restore thrashing guards
+├── test_storage_class_mapping.py       # Cross-provider tier normalization
+├── test_storage_configuration.py       # Pydantic v2 environment settings validation
+├── test_sync_api.py                    # Sync endpoint idempotency & error handling
+└── test_telemetry.py                   # Telemetry parsing, sliding windows & recency
+```
+
+### 12.2 Layered Error Boundaries & Fault-Tolerant Mitigations
+
+```
+                                  INCOMING OPERATION
+                                          │
+    ┌─────────────────────────────────────┴─────────────────────────────────────┐
+    ▼                                                                           ▼
+[ REST API / GATEWAY BOUNDARY ]                                 [ CONCURRENCY & LOCK BOUNDARY ]
+• Global Exception Handlers                                     • Distributed Mutex Locks per Prefix
+• Masked Error Response Payloads                                • Atomic PostgreSQL DB Transactions
+• Zero Stack Traces / Secrets Exposed                           • Eliminates Race Conditions & Split-Brains
+    │                                                                           │
+    └─────────────────────────────────────┬─────────────────────────────────────┘
+                                          │
+    ┌─────────────────────────────────────┴─────────────────────────────────────┐
+    ▼                                                                           ▼
+[ CLOUD PROVIDER THROTTLING BOUNDARY ]                          [ PARTIAL BATCH FAILURE BOUNDARY ]
+• Exponential Backoff with Full Jitter                          • Per-Item Fault Isolation in Batches
+• Intercepts AWS 503 SlowDown & HTTP 429                        • Failed Keys Quarantined to Dead-Letter
+• Max 5 Retries before Quarantine                               • 4,997/5,000 Batch Continues Unaffected
+    │                                                                           │
+    └─────────────────────────────────────┬─────────────────────────────────────┘
+                                          │
+                                          ▼
+                         [ SAFETY INVARIANT ENFORCEMENT ]
+                         • Priority 1 Legal Hold Override Check
+                         • Restore-Thrashing Guard (restore_90d > 0)
+                         • Simulation-Only Deletions (Zero Purges)
+```
+
+1. **API Boundary**: Standardized exception filters translate internal exceptions into clean RFC 7807 error models, ensuring zero database connection strings or AWS secret keys are ever reflected to clients.
+2. **Concurrency Boundary**: Synchronous locking prevents simultaneous migrations on overlapping bucket prefixes.
+3. **Throttling Boundary**: Exponential backoff with full jitter dynamically throttles request rates to stay within provider burst allowances.
+4. **Partial Batch Boundary**: Multi-object batch migrations process items with independent error boundaries; a failure on object $k$ does not invalidate or abort objects $1 \dots k-1$ or $k+1 \dots n$.
+
+---
+
+## 📚 13. Complete Documentation Index
+
+- [`docs/master-project-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/master-project-report.md) — Comprehensive Master Project Report (< 8,000 chars)
 - [`docs/requirements-specification.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/requirements-specification.md) — Formal Requirements Specification, Zero-PII Invariant & Precedence Hierarchy
 - [`docs/edge-and-failure-cases.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/edge-and-failure-cases.md) — 5 Operational Edge & Failure Scenarios with Proofs & Retrieval Safeguards
 - [`docs/legacy-coexistence-and-rollback.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/legacy-coexistence-and-rollback.md) — Legacy Workflow Coexistence (Shadow Mode) & Instant Rollback Demonstration
@@ -191,12 +361,6 @@ docker compose up -d
 - [`docs/stakeholder-validation-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/stakeholder-validation-report.md) — Formal Stakeholder Validation Signoff Report (FinOps, DevOps, Compliance, CTO)
 - [`docs/limitations.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/limitations.md) — System Boundaries, Cloud Provider Constraints & Scale Roadmap
 - [`docs/college-project-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/college-project-report.md) — 31-Section BE/BTech Academic Project Report
-- [`docs/modules.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/modules.md) — System Modules & Component Breakdown
 - [`docs/database-design.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/database-design.md) — Database Schema, ER Diagram & Mappings
-- [`docs/recommendation-algorithm.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/recommendation-algorithm.md) — Recommendation Rules & Decision Flow
 - [`docs/viva-and-demo.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/viva-and-demo.md) — Demo Scripts & 40 Academic Viva Q&As
-- [`docs/presentation-outline.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/presentation-outline.md) — 15-Slide Presentation Deck Structure
-- [`docs/operations.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/operations.md) — Operational Runbook & Maintenance
-- [`docs/deployment.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/deployment.md) — Production Deployment Guide
-- [`docs/tech-stack.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/tech-stack.md) — Technology Stack & Licensing
-- [`docs/step-15-final-report.md`](file:///d:/tools%20docx/projects/Storage%20management%201/docs/step-15-final-report.md) — Final Release Report
+
